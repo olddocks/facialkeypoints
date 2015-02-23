@@ -30,36 +30,48 @@ int main()
     
 
     printf("Testing network..\n");
+    //printf("Mean Square Error: %f\n", fann_get_MSE(ann));
     
+    printf("Writing to file...\n");
+
     fp = fopen("result.txt", "w");
 	
 	
 	fprintf(fp, "RowId,ImageId,FeatureName,Location\n");
 
 	struct fann *ann = fann_create_from_file("facial.net"); 
-	struct fann *ann2 = fann_create_from_file("facial2.net"); 
 	   
     struct fann_train_data *data = fann_read_train_from_file("ftest.txt");
-    
+    printf("Mean Square Error: %f\n", fann_get_MSE(ann));
     
     
     for(i = 0; i < fann_length_train_data(data); i++) {
         
        
         calc_out = fann_run(ann, data->input[i] );
-        calc_out2 = fann_run(ann2, data->input[i]);
         
     	
         
         for (int n=0; n<30; n++) {
             counter++;
-             unsigned int output;
+             float output;
             
-            output = (calc_out[n]*6 + calc_out2[n]*6) / 2;
-	        //printf (" %i#  %.2f/%.2f > %.2f \n", i+1 , calc_out[n]*6, calc_out2[n]*6, output );
-
+            //output = (calc_out[n]*6 + calc_out2[n]*6) / 2;
+	        //printf (" %i#  %.2f/%.2f > %.2f \n", i+1 , calc_out[n]*(2*96), calc_out2[n]*(2*96), output );
             
-            fprintf(fp, "%i,%i,%s,%i\n",counter,i+1,features[n], (int)calc_out[n]);
+            output = (float)calc_out[n]*(2*96);
+            
+            if ( output > 96) {
+                output = 96;
+            }
+            
+            if (output < 0 ) {
+                output = 0 ;
+            }
+            
+            
+           
+            fprintf(fp, "%i,%i,%s,%f\n",counter,i+1,features[n], output);
                    
         }
         
@@ -70,7 +82,6 @@ int main()
     }
     
     fclose(fp);
-    printf("Mean Square Error: %f\n", fann_get_MSE(ann));
     
 
 	fann_destroy_train(data);
